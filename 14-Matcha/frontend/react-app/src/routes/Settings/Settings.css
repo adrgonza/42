@@ -1,0 +1,114 @@
+.settings-card {
+    width: 90%;
+    max-width: 700px;
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  }  
+
+  .setting-item {
+    padding: 0px 40px;
+    text-align: left;
+  }
+  
+  .form-label {
+    font-weight: 600;
+    color: #2B3A45;
+  }
+  
+  .form-control,
+  .form-range,
+  .horizontal-slider {
+    width: 100%;
+    border-radius: 8px;
+    color: #2B3A45;
+  }
+  
+  .form-range,
+  .horizontal-slider {
+    height: 20px;
+    color: #1d4771;
+  }
+  
+  .form-range::-webkit-slider-track,
+  .slider-track {
+    height: 4px;
+    background: #adddff;
+    border-radius: 2px;
+  }
+  
+  .slider-track.slider-track-1 {
+    background: #ffffff;
+  }
+  
+  .form-range::-webkit-slider-thumb,
+  .slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #22476d;
+    border-radius: 50%;
+    cursor: pointer;
+    outline: none;
+    transition: box-shadow 0.2s ease-in-out;
+    margin-top: -8px;
+  }
+  
+  .form-range::-moz-range-thumb,
+  .slider-thumb {
+    width: 20px;
+    height: 20px;
+    background: #1d4771;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .slider-value {
+    text-align: right;
+    color: #2B3A45;
+    font-weight: 500;
+  }
+  
+  .btn-secondary {
+    max-width: 230px;
+    background-color: #A3C0D8;
+    border: none;
+    color: #F0F8FF;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #91B3C8;
+    transform: translateY(-2px);
+  }
+  
+  .btn-danger {
+    max-width: 230px;
+    background-color: #FF6B6B;
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .btn-danger:hover {
+    background-color: #FF5C5C;
+    transform: translateY(-2px);
+  }
+  
+  .content {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  

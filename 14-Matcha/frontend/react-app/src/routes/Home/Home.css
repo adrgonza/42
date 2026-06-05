@@ -1,0 +1,130 @@
+.card {
+  background-color: #e8f0f8 !important;
+  width: 22rem;
+  border-radius: 15px;
+  box-shadow: 0px 4px 20px rgba(53, 131, 158, 0.2) !important;
+  position: relative;
+}
+
+.card-img-top {
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 15px;
+}
+
+.like-button,
+.dislike-button {
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.like-button {
+  background-color: #2B6B84;
+  color: #fff;
+}
+
+.dislike-button {
+  background-color: #1E3A5F;
+  color: #fff;
+}
+
+.like-button:hover {
+  background-color: #1E3A5F;
+  transform: scale(1.05);
+}
+
+.dislike-button:hover {
+  background-color: #2B6B84;
+  transform: scale(1.05);
+}
+
+.shadow-sm {
+  box-shadow: 0 0.125rem 0.25rem rgba(53, 131, 158, 0.2);
+}
+
+.photo-navigation {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  transform: translateY(-50%);
+}
+
+.photo-arrow {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #000;
+  transition: color 0.3s;
+}
+
+.photo-arrow:hover {
+  color: #424242;
+  transform: scale(1.1);
+}
+
+.left-arrow {
+
+  margin-left: -60px;
+}
+
+.right-arrow {
+  margin-right: -60px;
+}
+
+.visited-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #6C757D;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  z-index: 2;
+}
+
+.match-animation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.5s;
+}
+
+.match-animation {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  animation: popIn 0.5s;
+}
+
+.match-icon {
+  font-size: 4rem;
+  color: #1E90FF;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.5); }
+  to { transform: scale(1); }
+}

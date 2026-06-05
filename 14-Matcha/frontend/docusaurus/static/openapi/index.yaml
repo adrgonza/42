@@ -1,0 +1,2656 @@
+openapi: 3.1.0
+info:
+  title: Matcha - OpenAPI 3.1
+  version: 1.0.0
+  description: |-
+    **Welcome to the Matcha Dating App API!**  
+    This specification outlines the Matcha API, a service designed to help people find meaningful connections. The API is built to be:
+    - **JSend-compliant**: All responses conform to the [JSend specification](https://github.com/omniti-labs/jsend).
+    - **Secure and Privacy-Focused**: We prioritize user safety, data privacy, and consent.
+    - **Feature-Rich**: Manage profiles, authenticate users, exchange messages, receive notifications, and more.
+
+    **Useful Resources:**
+    - [Matcha GitHub Repository](https://github.com/ugoi/Matcha)
+    - [OpenAPI Definition on GitHub](https://github.com/ugoi/Matcha/blob/main/backend/openapi/index.yaml)
+
+  termsOfService: https://github.com/ugoi/Matcha
+  contact:
+    name: Code Crafting Pro
+    url: https://github.com/ugoi/Matcha
+    email: codecraftingpro@gmail.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+externalDocs:
+  description: Learn more about the Matcha project on GitHub
+  url: https://github.com/ugoi/Matcha
+
+x-logo:
+  url: "https://example.com/images/matcha-logo.png"
+  backgroundColor: "#FFFFFF"
+  altText: "Matcha Logo"
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+tags:
+  - name: profile
+    description: |-
+      Operations for managing and interacting with user profiles.
+
+      **Capabilities:**
+      - View and update profile details
+      - Search profiles by various filters
+      - Like, block, or report users
+      - Manage user interests and photos
+    externalDocs:
+      description: Detailed documentation for profile operations
+      url: https://github.com/ugoi/Matcha
+
+  - name: user
+    description: |-
+      Operations that allow you to manage user accounts.
+
+      **Capabilities:**
+      - Create a new user
+      - Update existing user details
+      - View user account information
+      - Delete a user account
+    externalDocs:
+      description: More information on user management
+      url: https://github.com/ugoi/Matcha
+
+  - name: auth
+    description: |-
+      Operations related to user authentication and authorization.
+
+      **Capabilities:**
+      - User registration
+      - Login and logout
+      - Password reset and recovery
+    externalDocs:
+      description: Learn more about authentication flows
+      url: https://github.com/ugoi/Matcha
+
+  - name: notifications
+    description: |-
+      Operations to handle user notifications.
+
+      **Capabilities:**
+      - View notifications
+    externalDocs:
+      description: Notification management details
+      url: https://github.com/ugoi/Matcha
+
+  - name: chat
+    description: |-
+      Operations for messaging between users.
+
+      **Capabilities:**
+      - Send messages to other users
+      - View conversation history
+    externalDocs:
+      description: Chat system documentation
+      url: https://github.com/ugoi/Matcha
+
+paths:
+  ### Profile Endpoints
+  /profiles:
+    get:
+      tags:
+        - profile
+      summary: Get a list of user profiles
+      description: Retrieve multiple user profiles (with optional filters & sorting).
+      parameters:
+        - in: query
+          name: sort_by
+          description: Sort criteria (JSON)
+          schema:
+            type: object
+            properties:
+              age:
+                $ref: "#/components/schemas/SortItem"
+              distance:
+                $ref: "#/components/schemas/SortItem"
+              fame_rating:
+                $ref: "#/components/schemas/SortItem"
+              common_interests:
+                $ref: "#/components/schemas/SortItem"
+        - in: query
+          name: filter_by
+          description: Filter criteria (JSON)
+          schema:
+            type: object
+            properties:
+              user_id:
+                $ref: "#/components/schemas/FilterItem"
+              age:
+                $ref: "#/components/schemas/FilterItem"
+              distance:
+                $ref: "#/components/schemas/FilterItem"
+              fame_rating:
+                $ref: "#/components/schemas/FilterItem"
+              common_interests:
+                $ref: "#/components/schemas/FilterItem"
+              interests:
+                $ref: "#/components/schemas/FilterItem"
+              username:
+                $ref: "#/components/schemas/FilterItem"
+              email:
+                $ref: "#/components/schemas/FilterItem"
+              gender:
+                $ref: "#/components/schemas/FilterItem"
+      responses:
+        "200":
+          description: A list of profiles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PublicProfile"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    - profile_id: "e8686b2e-a7f2-45e4-9f3c-e11c7952d600"
+                      user_id: "20b62f13-3d03-4c8c-8c65-3a99c71a2bf1"
+                      username: "alice_123"
+                      first_name: "Alice"
+                      last_name: "Doe"
+                      gender: "female"
+                      age: 25
+                      sexual_preference: "heterosexual"
+                      biography: "Loves hiking and cooking"
+                      fame_rating: 42
+                      distance: 100
+                      pictures: []
+                fail:
+                  summary: Example fail response
+                  value:
+                    status: "fail"
+                    data:
+                      title: "Invalid Input"
+                      errors:
+                        - msg: "Parameter 'sort_by' must be valid JSON"
+                          path: "sort_by"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Database connection failed"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --globoff 'http://localhost:3000/api/profiles?sort_by={%22distance%22%3A%20{%22%24order%22%3A%20%22desc%22}%2C%20%22age%22%3A%20{%22%24order%22%3A%20%22asc%22}}&filter_by={%22age%22%3A%20{%22%24lt%22%3A%20%2219%22}}' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+              redirect: "follow",
+            };
+
+            const sort_by = {
+              distance: { $order: "desc" },
+              age: { $order: "asc" },
+            };
+
+            const filter_by = {
+              age: { $lt: "19" },
+            };
+
+            const url = new URL("http://localhost:3000/api/profiles");
+            url.searchParams.append("sort_by", JSON.stringify(sort_by));
+            url.searchParams.append("filter_by", JSON.stringify(filter_by));
+
+            try {
+              const response = await fetch(url.toString(), requestOptions);
+              const data = await response.json();
+              console.log("Profiles:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /profiles/{user_id}:
+    get:
+      tags:
+        - profile
+      summary: Get a user profile by ID
+      description: Retrieve a single user profile by user_id.
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A single profile
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/PublicProfile"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    profile_id: "66f2f0a0-ade9-412f-9678-383d9f887123"
+                    user_id: "8721ac37-2bd6-4bb6-8051-7858653ae77f"
+                    username: "bob_456"
+                    first_name: "Bob"
+                    last_name: "Smith"
+                    gender: "male"
+                    age: 29
+                    sexual_preference: "bisexual"
+                    biography: "Tech enthusiast"
+                    fame_rating: 10
+                    distance: 300
+                    pictures: []
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Profile not found"
+                    data: null
+        x-codeSamples:
+          - lang: cURL
+            source: |
+              curl --location --request GET 'http://localhost:3000/api/profiles/1234' \
+              --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+          - lang: typescript
+            source: |
+              const requestOptions: RequestInit = {
+                method: "GET",
+                headers: {
+                  Authorization: "Bearer YOUR_JWT_TOKEN",
+                },
+              };
+
+              try {
+                const response = await fetch("http://localhost:3000/api/profiles/1234", requestOptions);
+                const data = await response.json();
+                console.log("Profile:", data);
+              } catch (error) {
+                console.error("Error:", error);
+              }
+
+  /profiles/me:
+    get:
+      tags:
+        - profile
+      summary: Get my profile
+      description: Retrieve the authenticated user's profile.
+      responses:
+        "200":
+          description: The authenticated user's profile
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          profile:
+                            $ref: "#/components/schemas/PublicProfile"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      profile_id: "36023346-afac-4d1e-97d3-ba5153f66db3"
+                      user_id: "c893cd54-bc06-4d13-8b1e-95435c7d791b"
+                      gender: "female"
+                      age: 19
+                      sexual_preference: "heterosexual"
+                      biography: "Hello"
+                      fame_rating: 0
+                      profile_picture: "https://picsum.photos/id/19/200/200"
+                      location: "0101000020E610000074B7EBA529A662C0C119FCFD62F234C0"
+                      last_online: "2025-02-03T22:31:52.947Z"
+                      created_at: "2025-02-03T22:31:52.947Z"
+                      username: "stefan"
+                      first_name: "Stefan"
+                      last_name: "Dukic"
+                      gps_latitude: -20.946823
+                      gps_longitude: -149.192584
+                      interests: []
+                      pictures:
+                        [
+                          {
+                            picture_id: "e4d00bce-c6f6-48c3-9bc9-feda2e4bde07",
+                            user_id: "c893cd54-bc06-4d13-8b1e-95435c7d791b",
+                            picture_url: "https://picsum.photos/id/19/200/200",
+                          },
+                          {
+                            picture_id: "8788cbe4-e643-441b-8803-5f42aab58229",
+                            user_id: "c893cd54-bc06-4d13-8b1e-95435c7d791b",
+                            picture_url: "https://picsum.photos/id/16/200/200",
+                          },
+                        ]
+                      search_preferences:
+                        {
+                          search_id: "32b0072c-d609-4c67-babc-3f1dad0f2711",
+                          user_id: "c893cd54-bc06-4d13-8b1e-95435c7d791b",
+                          age_min: 18,
+                          age_max: 30,
+                          fame_rating_min: null,
+                          fame_rating_max: null,
+                          location_radius: null,
+                          interests_filter: null,
+                          common_interests: 2,
+                        }
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Could not fetch your profile"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request GET 'http://localhost:3000/api/profiles/me' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me", requestOptions);
+              const data = await response.json();
+              console.log("My profile:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    patch:
+      tags:
+        - profile
+      summary: Update my profile
+      description: Update fields of the authenticated user's profile.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                gender:
+                  type: string
+                  enum: [male, female, other]
+                  description: User's gender
+                age:
+                  type: string
+                  description: User's age
+                sexual_preference:
+                  type: string
+                  enum: [heterosexual, homosexual, bisexual]
+                  description: User's sexual preference
+                biography:
+                  type: string
+                  description: User's biography
+                profile_picture:
+                  type: string
+                  description: URL of the profile picture
+                gps_longitude:
+                  type: string
+                  description: Longitude coordinate
+                gps_latitude:
+                  type: string
+                  description: Latitude coordinate
+                age_min:
+                  type: string
+                  description: Minimum age preference for matching
+                age_max:
+                  type: string
+                  description: Maximum age preference for matching
+                fame_rating_min:
+                  type: string
+                  description: Minimum fame rating preference for matching
+                fame_rating_max:
+                  type: string
+                  description: Maximum fame rating preference for matching
+                location_radius:
+                  type: string
+                  description: Maximum distance radius for matching (in kilometers)
+                interests_filter:
+                  type: string
+                  description: Comma-separated list of interests to filter matches
+                common_interests:
+                  type: string
+                  description: Minimum number of common interests required for matching
+      responses:
+        "200":
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          profile:
+                            $ref: "#/components/schemas/PublicProfile"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      profile:
+                        profile_id: "f241db89-e483-4c54-96e2-0cd2d043cadd"
+                        user_id: "e7ad562b-3d82-45eb-8bc0-30f158681f9f"
+                        gender: "female"
+                        age: 30
+                        sexual_preference: "homosexual"
+                        biography: "I am your father..."
+                        profile_picture: "https://picsum.photos/id/19/200/200"
+                        gps_latitude: "-20.946823"
+                        gps_longitude: "180"
+                fail:
+                  summary: Example fail response
+                  value:
+                    status: "fail"
+                    data:
+                      title: "Invalid input"
+                      errors:
+                        - msg: "Invalid gender value"
+                          path: "gender"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "An unexpected error occurred"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request PATCH 'http://localhost:3000/api/profiles/me' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'gender=female' \
+            --data-urlencode 'age=30' \
+            --data-urlencode 'sexual_preference=homosexual' \
+            --data-urlencode 'biography=I am your father...' \
+            --data-urlencode 'profile_picture=https://picsum.photos/id/19/200/200' \
+            --data-urlencode 'gps_longitude=180' \
+            --data-urlencode 'gps_latitude=-20.946823' \
+            --data-urlencode 'age_min=23' \
+            --data-urlencode 'age_max=20' \
+            --data-urlencode 'fame_rating_min=1' \
+            --data-urlencode 'fame_rating_max=100' \
+            --data-urlencode 'location_radius=100' \
+            --data-urlencode 'interests_filter=biking, hiking' \
+            --data-urlencode 'common_interests=2'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("gender", "female");
+            urlencoded.append("age", "30");
+            urlencoded.append("sexual_preference", "homosexual");
+            urlencoded.append("biography", "I am your father...");
+            urlencoded.append("profile_picture", "https://picsum.photos/id/19/200/200");
+            urlencoded.append("gps_longitude", "180");
+            urlencoded.append("gps_latitude", "-20.946823");
+            urlencoded.append("age_min", "23");
+            urlencoded.append("age_max", "20");
+            urlencoded.append("fame_rating_min", "1");
+            urlencoded.append("fame_rating_max", "100");
+            urlencoded.append("location_radius", "100");
+            urlencoded.append("interests_filter", "biking, hiking");
+            urlencoded.append("common_interests", "2");
+
+            const requestOptions: RequestInit = {
+              method: "PATCH",
+              headers: myHeaders,
+              body: urlencoded,
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me", requestOptions);
+              const data = await response.json();
+              console.log("Profile updated:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    post:
+      tags:
+        - profile
+      summary: Create or complete my profile
+      description: Initialize or complete the authenticated user's profile details.
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                gender:
+                  type: string
+                age:
+                  type: string
+                sexual_preference:
+                  type: string
+                biography:
+                  type: string
+                profile_picture:
+                  type: string
+                gps_latitude:
+                  type: string
+                gps_longitude:
+                  type: string
+      responses:
+        "200":
+          description: Profile created or updated successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          profile:
+                            $ref: "#/components/schemas/PublicProfile"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      title: "Profile created"
+                      profile:
+                        profile_id: "f241db89-e483-4c54-96e2-0cd2d043cadd"
+                        user_id: "e7ad562b-3d82-45eb-8bc0-30f158681f9f"
+                        username: "my_username"
+                        gender: "female"
+                        age: 19
+                fail:
+                  summary: Example fail response
+                  value:
+                    status: "fail"
+                    data:
+                      title: "Invalid input"
+                      errors:
+                        - msg: "gender is required"
+                          path: "gender"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Database error"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/profiles/me' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'gender=female' \
+            --data-urlencode 'age=19' \
+            --data-urlencode 'sexual_preference=heterosexual' \
+            --data-urlencode 'biography=Hello' \
+            --data-urlencode 'profile_picture=https://picsum.photos/id/19/200/200' \
+            --data-urlencode 'gps_latitude=-20.946823' \
+            --data-urlencode 'gps_longitude=210.807416'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", "Bearer YOUR_JWT_TOKEN");
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("gender", "female");
+            urlencoded.append("age", "19");
+            urlencoded.append("sexual_preference", "heterosexual");
+            urlencoded.append("biography", "Hello");
+            urlencoded.append("profile_picture", "https://picsum.photos/id/19/200/200");
+            urlencoded.append("gps_latitude", "-20.946823");
+            urlencoded.append("gps_longitude", "210.807416");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me", requestOptions);
+              const data = await response.json();
+              console.log("Created/updated profile:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  ### Profile Visits
+  /profiles/{user_id}/visits:
+    post:
+      tags:
+        - profile
+      summary: Record a profile visit
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "201":
+          description: Visit recorded successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          visit_id:
+                            type: string
+                          visited_user_id:
+                            type: string
+                          visitor_user_id:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      visit_id: "5f09591c-69ec-4ad3-9506-a69a517d60d2"
+                      visited_user_id: "1234"
+                      visitor_user_id: "5678"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Could not record visit"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request POST 'http://localhost:3000/api/profiles/1234/visits' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/1234/visits", requestOptions);
+              const data = await response.json();
+              console.log("Visit result:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /profiles/visits:
+    get:
+      tags:
+        - profile
+      summary: Get profiles the user visited
+      responses:
+        "200":
+          description: List of visited profiles
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          visits:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                visited_user_id:
+                                  type: string
+                                visited_at:
+                                  type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      visits:
+                        - visited_user_id: "abcd-1234"
+                          visited_at: "2024-04-10T15:30:00.000Z"
+                        - visited_user_id: "efgh-5678"
+                          visited_at: "2024-04-11T10:15:00.000Z"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Could not retrieve visited profiles"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/profiles/visits' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/visits", requestOptions);
+              const data = await response.json();
+              console.log("Visited profiles:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  ### Profile Interests
+  /profiles/me/interests:
+    post:
+      tags:
+        - profile
+      summary: Add interests to my profile
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                interests:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Interests added
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          interests:
+                            type: array
+                            items:
+                              type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      interests: ["football", "hiking"]
+                fail:
+                  summary: Example fail response
+                  value:
+                    status: "fail"
+                    data:
+                      title: "Invalid input"
+                      errors:
+                        - msg: "interests must be an array of strings"
+                          path: "interests"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Database error"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request POST 'http://localhost:3000/api/profiles/me/interests' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'interests=football' \
+            --data-urlencode 'interests=hiking'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", "Bearer YOUR_JWT_TOKEN");
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("interests", "football");
+            urlencoded.append("interests", "hiking");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me/interests", requestOptions);
+              const data = await response.json();
+              console.log("Interests added:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    get:
+      tags:
+        - profile
+      summary: Get my interests
+      responses:
+        "200":
+          description: List of interests
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          interests:
+                            type: array
+                            items:
+                              type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      interests: ["football", "hiking", "coding"]
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Unable to retrieve interests"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request GET 'http://localhost:3000/api/profiles/me/interests' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me/interests", requestOptions);
+              const data = await response.json();
+              console.log("My interests:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    delete:
+      tags:
+        - profile
+      summary: Remove interests from my profile
+      description: Provide interests to remove via query parameters.
+      parameters:
+        - in: query
+          name: interests
+          description: Interests to remove (repeat for multiple)
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Interests removed
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          removed:
+                            type: array
+                            items:
+                              type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      removed: ["football", "hiking"]
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Unable to remove interests"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request DELETE 'http://localhost:3000/api/profiles/me/interests?interests=football&interests=hiking' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "DELETE",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            const url = new URL("http://localhost:3000/api/profiles/me/interests");
+            url.searchParams.append("interests", "football");
+            url.searchParams.append("interests", "hiking");
+
+            try {
+              const response = await fetch(url.toString(), requestOptions);
+              const data = await response.json();
+              console.log("Removed interests:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /profiles/{user_id}/interests:
+    get:
+      tags:
+        - profile
+      summary: Get interests of a user by ID
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of user's interests
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          interests:
+                            type: array
+                            items:
+                              type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      interests: ["swimming", "gaming"]
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "User interests not found"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request GET 'http://localhost:3000/api/profiles/1234/interests' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/1234/interests", requestOptions);
+              const data = await response.json();
+              console.log("User interests:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  ### Profile Pictures
+  /profiles/me/pictures:
+    post:
+      tags:
+        - profile
+      summary: Add pictures to my profile
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                pictures:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Pictures added
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          pictures:
+                            type: array
+                            items:
+                              type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      pictures:
+                        - "https://picsum.photos/id/1/200/200"
+                        - "https://picsum.photos/id/2/200/200"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Cannot add pictures"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request POST 'http://localhost:3000/api/profiles/me/pictures' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'pictures=https://picsum.photos/id/1/200/200' \
+            --data-urlencode 'pictures=https://picsum.photos/id/2/200/200'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", "Bearer YOUR_JWT_TOKEN");
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("pictures", "https://picsum.photos/id/1/200/200");
+            urlencoded.append("pictures", "https://picsum.photos/id/2/200/200");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me/pictures", requestOptions);
+              const data = await response.json();
+              console.log("Pictures added:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    get:
+      tags:
+        - profile
+      summary: Get my profile pictures
+      responses:
+        "200":
+          description: List of pictures
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          pictures:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Picture"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      pictures:
+                        - picture_id: "abc-123"
+                          user_id: "me-123"
+                          picture_url: "https://picsum.photos/id/1/200/200"
+                        - picture_id: "def-456"
+                          user_id: "me-123"
+                          picture_url: "https://picsum.photos/id/2/200/200"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "No pictures found"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request GET 'http://localhost:3000/api/profiles/me/pictures' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/profiles/me/pictures", requestOptions);
+              const data = await response.json();
+              console.log("My pictures:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    delete:
+      tags:
+        - profile
+      summary: Delete pictures from my profile
+      description: Provide pictures to remove via query parameters.
+      parameters:
+        - in: query
+          name: pictures
+          description: Pictures to remove (repeat for multiple)
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        "200":
+          description: Pictures removed
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          removed:
+                            type: array
+                            items:
+                              type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                success:
+                  summary: Example success response
+                  value:
+                    status: "success"
+                    data:
+                      removed:
+                        - "https://picsum.photos/id/1/200/200"
+                        - "https://picsum.photos/id/2/200/200"
+                error:
+                  summary: Example error response
+                  value:
+                    status: "error"
+                    message: "Could not remove pictures"
+                    data: null
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request DELETE 'http://localhost:3000/api/profiles/me/pictures?pictures=https://picsum.photos/id/1/200/200&pictures=https://picsum.photos/id/2/200/200' \
+            --header 'Authorization: Bearer YOUR_JWT_TOKEN'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "DELETE",
+              headers: {
+                Authorization: "Bearer YOUR_JWT_TOKEN",
+              },
+            };
+
+            const url = new URL("http://localhost:3000/api/profiles/me/pictures");
+            url.searchParams.append("pictures", "https://picsum.photos/id/1/200/200");
+            url.searchParams.append("pictures", "https://picsum.photos/id/2/200/200");
+
+            try {
+              const response = await fetch(url.toString(), requestOptions);
+              const data = await response.json();
+              console.log("Pictures removed:", data);
+            } catch (error) {
+              console.error("Error:", error);
+            }
+  ### User Endpoints
+  /users/me:
+    get:
+      tags:
+        - user
+      summary: Get my user account
+      responses:
+        "200":
+          description: User account details
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          user:
+                            $ref: "#/components/schemas/User"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/users/me'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/users/me", requestOptions);
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    delete:
+      tags:
+        - user
+      summary: Delete my user account
+      responses:
+        "200":
+          description: User account deleted
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/users/me' \
+            --request DELETE
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "DELETE",
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/users/me", requestOptions);
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+    patch:
+      tags:
+        - user
+      summary: Update my user account
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                phone:
+                  type: string
+      responses:
+        "200":
+          description: User account updated
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          user:
+                            $ref: "#/components/schemas/User"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/users/me' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'username=john_doe' \
+            --data-urlencode 'email=john.doe@gmail.com' \
+            --data-urlencode 'first_name=John' \
+            --data-urlencode 'last_name=Doe' \
+            --data-urlencode 'phone=1234567890' \
+            --request PATCH
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("username", "john_doe");
+            urlencoded.append("email", "john.doe@gmail.com");
+            urlencoded.append("first_name", "John");
+            urlencoded.append("last_name", "Doe");
+            urlencoded.append("phone", "1234567890");
+
+            const requestOptions: RequestInit = {
+              method: "PATCH",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/users/me", requestOptions);
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+  ### Auth Endpoints
+  /signup:
+    post:
+      security: []
+      tags:
+        - auth
+      summary: Sign up
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                username:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          user:
+                            $ref: "#/components/schemas/User"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/signup' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'firstName=John' \
+            --data-urlencode 'username=john_doe' \
+            --data-urlencode 'lastName=Doe' \
+            --data-urlencode 'email=john.doe@gmail.com' \
+            --data-urlencode 'password=Password123...'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("firstName", "John");
+            urlencoded.append("username", "john_doe");
+            urlencoded.append("lastName", "Doe");
+            urlencoded.append("email", "john.doe@gmail.com");
+            urlencoded.append("password", "Password123...");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/signup",
+                requestOptions
+              );
+
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /login:
+    post:
+      security: []
+      tags:
+        - auth
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Authenticated successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          title:
+                            type: string
+                          token:
+                            type: string
+                            description: JWT token for authenticated sessions
+                          user:
+                            $ref: "#/components/schemas/User"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/login' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'username=john_doe' \
+            --data-urlencode 'password=Password123...'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("username", "john_doe");
+            urlencoded.append("password", "Password123...");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/login", requestOptions);
+              const json = await response.json();
+              const status = json.status;
+              if (status === "error") {
+                console.error(status, json);
+              } else if (status === "fail") {
+                console.log(status, json.data.errors);
+              } else if (status === "success") {
+                console.log("Logged in successfully!", json.data);
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /logout:
+    get:
+      tags:
+        - auth
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/logout'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/logout", requestOptions);
+              const json = await response.json();
+              const status = json.status;
+              if (status === "error") {
+                console.error(status, json);
+              } else if (status === "fail") {
+                console.log(status, json.data.errors);
+              } else if (status === "success") {
+                console.log("Logged out successfully!", json.data);
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /check-auth:
+    get:
+      tags:
+        - auth
+      summary: Check authentication
+      responses:
+        "200":
+          description: Session is valid
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Not authenticated
+          content:
+            application/text:
+              schema:
+                type: string
+                example: Unauthorized
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/check-auth'
+        - lang: typescript
+          source: |
+            const requestOptions: RequestInit = {
+              method: "GET",
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/check-auth", requestOptions);
+              const json = await response.json();
+              const status = json.status;
+              if (status === "error") {
+                console.error(status, json);
+              } else if (status === "fail") {
+                console.log(status, json.data.errors);
+              } else if (status === "success") {
+                console.log("Session is valid!", json.data);
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /reset-password:
+    post:
+      security: []
+      tags:
+        - auth
+      summary: Request password reset
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        "200":
+          description: Password reset link sent
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/reset-password' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'email=john.doe@gmail.com'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("email", "john.doe@gmail.com");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/reset-password",
+                requestOptions
+              );
+
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+    patch:
+      security: []
+      tags:
+        - auth
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                password:
+                  type: string
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/reset-password' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'token=123456' \
+            --data-urlencode 'password=Password123...'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("token", "123456");
+            urlencoded.append("password", "Password123...");
+
+            const requestOptions: RequestInit = {
+              method: "PATCH",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/reset-password",
+                requestOptions
+              );
+
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /resend-verification-email:
+    post:
+      security: []
+      tags:
+        - auth
+      summary: Resend verification email
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+      responses:
+        "200":
+          description: Verification email resent
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/resend-verification-email' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'john.doe@gmail.com'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("email", "john.doe@gmail.com");
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/resend-verification-email",
+                requestOptions
+              );
+
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /verify-email:
+    patch:
+      security: []
+      tags:
+        - auth
+      summary: Verify email
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        "200":
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          message:
+                            type: string
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location 'http://localhost:3000/api/verify-email' \
+            --header 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode 'token=123456'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+            const urlencoded = new URLSearchParams();
+            urlencoded.append("token", "123456");
+
+            const requestOptions: RequestInit = {
+              method: "PATCH",
+              headers: myHeaders,
+              body: urlencoded,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch(
+                "http://localhost:3000/api/verify-email",
+                requestOptions
+              );
+
+              const json = await response.json();
+              console.log(json);
+              const status = json.status;
+              if (status === "error") {
+                console.error(status)
+              } else if (status === "fail") {
+                console.log(status)
+              } else if (status === "success") {
+                console.error(status)
+              }
+            } catch (error) {
+              console.error("Error:", error);
+            }
+
+  /login/google:
+    get:
+      tags:
+        - auth
+      summary: Google OAuth Login
+      description: Initiate Google OAuth flow.
+      responses:
+        "302":
+          description: Redirect to Google OAuth page
+
+  /oauth2/redirect/google:
+    get:
+      tags:
+        - auth
+      summary: Google OAuth Redirect
+      description: Handle the redirect after Google OAuth login.
+      responses:
+        "302":
+          description: Redirect after Google auth flow completes
+
+  /login/facebook:
+    get:
+      tags:
+        - auth
+      summary: Facebook OAuth Login
+      description: Initiate Facebook OAuth flow.
+      responses:
+        "302":
+          description: Redirect to Facebook OAuth page
+
+  /oauth2/redirect/facebook:
+    get:
+      tags:
+        - auth
+      summary: Facebook OAuth Redirect
+      description: Handle the redirect after Facebook OAuth login.
+      responses:
+        "302":
+          description: Redirect after Facebook auth flow completes
+
+  /chats/{user_id}:
+    get:
+      tags:
+        - chat
+      summary: Get chat history
+      description: Retrieve the chat history between the authenticated user and another user.
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the user you want to retrieve chat messages with
+        - in: query
+          name: next_cursor
+          required: false
+          schema:
+            type: string
+          description: Cursor for pagination
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 20
+          description: Number of messages to retrieve
+      responses:
+        "200":
+          description: List of chat messages
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          chats:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Chat"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request GET "http://localhost:3000/api/chats/1234?limit=20&next_cursor=2023-10-01T12%3A00%3A00.000Z" \
+            --header "Authorization: Bearer YOUR_JWT_TOKEN"
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", "Bearer YOUR_JWT_TOKEN");
+
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: myHeaders,
+              redirect: "follow",
+            };
+
+            try {
+              // Replace "1234" with the desired user ID
+              const response = await fetch("http://localhost:3000/api/chats/1234?limit=20&next_cursor=2023-10-01T12%3A00%3A00.000Z", requestOptions);
+              const json = await response.json();
+              switch (json.status) {
+                case "error":
+                  console.error("Error Response:", json);
+                  break;
+                case "fail":
+                  console.warn("Validation Fail:", json.data.errors);
+                  break;
+                case "success":
+                  console.log("Chat messages:", json.data.chats);
+                  break;
+                default:
+                  console.log("Unexpected response:", json);
+              }
+            } catch (error) {
+              console.error("Fetch error:", error);
+            }
+
+    post:
+      tags:
+        - chat
+      summary: Send a chat message
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the user you want to send a message to
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: The content of the chat message
+              required:
+                - message
+      responses:
+        "201":
+          description: Chat messages (including the newly sent message) returned
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          chat:
+                            $ref: "#/components/schemas/Chat"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request POST "http://localhost:3000/api/chats/1234" \
+            --header "Content-Type: application/json" \
+            --header "Authorization: Bearer YOUR_JWT_TOKEN" \
+            --data-raw '{
+              "message": "Hey there!"
+            }'
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json");
+            myHeaders.append("Authorization", "Bearer YOUR_JWT_TOKEN");
+
+            const body = JSON.stringify({
+              message: "Hey there!",
+            });
+
+            const requestOptions: RequestInit = {
+              method: "POST",
+              headers: myHeaders,
+              body,
+            };
+
+            try {
+              // Replace "1234" with the desired user ID
+              const response = await fetch("http://localhost:3000/api/chats/1234", requestOptions);
+              const json = await response.json();
+
+              switch (json.status) {
+                case "error":
+                  console.error("Error response:", json);
+                  break;
+                case "fail":
+                  console.warn("Validation failed:", json.data.errors);
+                  break;
+                case "success":
+                  console.log("Chats:", json.data.chats);
+                  break;
+                default:
+                  console.log("Unexpected response:", json);
+              }
+            } catch (error) {
+              console.error("Fetch error:", error);
+            }
+  ### Notifications Endpoints
+  /notifications:
+    get:
+      tags:
+        - notifications
+      summary: Get notifications
+      description: Retrieve a list of notifications for the authenticated user.
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/SuccessResponse"
+                    title: SuccessResponse
+                    type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          notifications:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Notification"
+                  - $ref: "#/components/schemas/FailResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+      x-codeSamples:
+        - lang: cURL
+          source: |
+            curl --location --request GET "http://localhost:3000/api/notifications" \
+            --header "Authorization: Bearer YOUR_JWT_TOKEN"
+        - lang: typescript
+          source: |
+            const myHeaders = new Headers();
+            myHeaders.append("Authorization", "Bearer YOUR_JWT_TOKEN");
+
+            const requestOptions: RequestInit = {
+              method: "GET",
+              headers: myHeaders,
+              redirect: "follow",
+            };
+
+            try {
+              const response = await fetch("http://localhost:3000/api/notifications", requestOptions);
+              const json = await response.json();
+
+              switch (json.status) {
+                case "error":
+                  console.error("Error response:", json);
+                  break;
+                case "fail":
+                  console.warn("Validation failed:", json.data.errors);
+                  break;
+                case "success":
+                  console.log("Notifications:", json.data.notifications);
+                  break;
+                default:
+                  console.log("Unexpected response:", json);
+              }
+            } catch (error) {
+              console.error("Fetch error:", error);
+            }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt
+
+  schemas:
+    SortItem:
+      type: object
+      properties:
+        $order:
+          type: string
+          enum: [asc, desc]
+          description: The sort order.
+    FilterItem:
+      type: object
+      properties:
+        $eq:
+          type: string
+          description: The value to match.
+        $neq:
+          type: string
+          description: The value to exclude.
+        $gt:
+          type: string
+          description: The value to be greater than.
+        $gte:
+          type: string
+          description: The value to be greater than or equal to.
+        $lt:
+          type: string
+          description: The value to be less than.
+        $lte:
+          type: string
+          description: The value to be less than or equal to.
+        $like:
+          type: string
+          description: The value to match using a wildcard.
+        $in:
+          type: array
+          items:
+            type: string
+          description: The values to match.
+        $nin:
+          type: array
+          items:
+            type: string
+          description: The values to exclude.
+        $contains:
+          type: string
+          description: The value to contain.
+        $contained:
+          type: string
+          description: The value to be contained in.
+        $overlap:
+          type: string
+          description: The value to overlap.
+        $exists:
+          type: boolean
+          description: The value to exist.
+        $nexits:
+          type: boolean
+          description: The value to not exist.
+    FieldError:
+      type: object
+      properties:
+        type:
+          type: string
+          description: The type of error.
+          example: field
+        value:
+          type: string
+          description: The input value that caused the error.
+          example: adrgonzax2
+        msg:
+          type: string
+          description: The error message.
+          example: username already exists
+        path:
+          type: string
+          description: The field or path associated with the error.
+          example: username
+        location:
+          type: string
+          description: The location of the error (e.g., body, query, params).
+          example: body
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+          description: The status of the response.
+        data:
+          type: object
+          nullable: true
+          description: The data payload of the response.
+    FailResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [fail]
+          description: The status of the response.
+        data:
+          type: object
+          nullable: true
+          description: The data payload of the response.
+          properties:
+            title:
+              type: string
+            errors:
+              type: array
+              items:
+                $ref: "#/components/schemas/FieldError"
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+          description: The status of the response.
+        message:
+          type: string
+          description: The error message.
+        data:
+          type: object
+          nullable: true
+          description: The data payload of the response.
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user.
+        firstName:
+          type: string
+          description: First name of the user.
+        lastName:
+          type: string
+          description: Last name of the user.
+        username:
+          type: string
+          description: Username of the user.
+        email:
+          type: string
+          format: email
+          description: Email address of the user.
+    Chat:
+      type: object
+      properties:
+        chat_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the chat message.
+        sender_user_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the sender.
+        receiver_user_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the receiver.
+        message:
+          type: string
+          description: Chat message.
+        sent_at:
+          type: string
+          format: date-time
+          description: Timestamp when the message was sent.
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        message:
+          type: string
+    Profile:
+      type: object
+      properties:
+        user_id:
+          type: string
+        username:
+          type: string
+    PublicProfile:
+      type: object
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the profile.
+        user_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the user.
+        first_name:
+          type: string
+          description: First name of the user.
+        last_name:
+          type: string
+          description: Last name of the user.
+        username:
+          type: string
+          description: Username of the user.
+        gender:
+          type: string
+          enum: [male, female, other]
+          description: Gender of the user.
+        age:
+          type: integer
+          description: Age of the user.
+        sexual_preference:
+          type: string
+          description: Sexual preference of the user.
+        biography:
+          type: string
+          description: Biography of the user.
+        interests:
+          type: array
+          items:
+            $ref: "#/components/schemas/Interest"
+          description: List of user interests.
+        common_interests:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: List of common interests, if any.
+        pictures:
+          type: array
+          items:
+            $ref: "#/components/schemas/Picture"
+          description: List of user pictures.
+        fame_rating:
+          type: integer
+          description: Fame rating of the user.
+        profile_picture:
+          type: string
+          description: URL of the profile picture.
+        distance:
+          type: number
+          format: double
+          description: Distance to the user in meters.
+        last_online:
+          type: string
+          format: date-time
+          description: Last online timestamp of the user.
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp of the profile.
+    Interest:
+      type: object
+      properties:
+        interest_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the interest.
+        user_id:
+          type: string
+          format: uuid
+          description: User ID associated with the interest.
+        interest_tag:
+          type: string
+          description: Tag describing the interest.
+    Picture:
+      type: object
+      properties:
+        picture_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the picture.
+        user_id:
+          type: string
+          format: uuid
+          description: User ID associated with the picture.
+        picture_url:
+          type: string
+          description: URL of the picture.
+
+security:
+  - cookieAuth: []

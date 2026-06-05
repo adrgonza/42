@@ -1,0 +1,37 @@
+.navbar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    min-width: 300px;
+    margin: 20px auto;
+  }
+  
+  .notification-wrapper {
+    display: flex;
+    align-items: left;
+  }
+  
+  .navbar-nav {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-around;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2B3A45;
+  }
+  
+  .navbar-links {
+    padding: 10px;
+  }
+  
+  .logout-link {
+    color: #FF6B6B !important;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  
+  .logout-link:hover {
+    color: #FF4C4C;
+  }
+  
